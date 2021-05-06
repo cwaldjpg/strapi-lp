@@ -1,0 +1,34 @@
+image: node:12.16.3
+
+definitions:
+  steps:
+    - step: &ready
+        name: Ready
+        script:
+          - echo "Ready to deploy"
+    - step: &deploy
+        name: Deploy to Server
+        trigger: manual
+        caches:
+            - node
+        script:
+            - npm install -g pm2
+            - pm2 deploy ecosystem.config.js $BITBUCKET_DEPLOYMENT_ENVIRONMENT setup
+            - pm2 deploy ecosystem.config.js $BITBUCKET_DEPLOYMENT_ENVIRONMENT --force
+pipelines:
+  branches:
+    develop:
+      - step: *ready
+      - step: 
+          <<: *deploy
+          deployment: development
+    staging:
+      - step: *ready
+      - step: 
+          <<: *deploy
+          deployment: staging
+    master:
+      - step: *ready
+      - step: 
+          <<: *deploy
+          deployment: master
